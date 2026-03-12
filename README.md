@@ -17,7 +17,7 @@ pip install -r requirements.txt
 LLM_PROVIDER=stub uvicorn app.main:app --reload
 ```
 
-### 3. Run with OpenAI
+### 3. Run with OpenAI/Groq(Free)
 
 ```bash
 export OPENAI_API_KEY=sk-your-key-here
@@ -25,7 +25,7 @@ export LLM_PROVIDER=openai
 uvicorn app.main:app --reload
 ```
 
-### 4. Test the API
+### 4. Test the API (or double-click chat_ui.html to use the ui on your browser)
 
 ```bash
 curl -X POST http://localhost:8000/chat \
