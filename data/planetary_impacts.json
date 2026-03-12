@@ -1,0 +1,47 @@
+{
+    "Sun": {
+        "description": "Represents identity, ego, self-expression and vitality.",
+        "nature": "benefic",
+        "influences": "confidence, authority, creativity, health"
+    },
+    "Moon": {
+        "description": "Represents emotions, inner world, intuition and nurturing energy.",
+        "nature": "benefic",
+        "influences": "mood, relationships, instincts, comfort"
+    },
+    "Mars": {
+        "description": "Represents ambition, drive, assertiveness and conflict.",
+        "nature": "malefic",
+        "influences": "career, competition, energy, courage"
+    },
+    "Venus": {
+        "description": "Represents love, harmony, relationships and art.",
+        "nature": "benefic",
+        "influences": "romance, beauty, pleasure, partnerships"
+    },
+    "Mercury": {
+        "description": "Represents communication, logic, travel and intelligence.",
+        "nature": "neutral",
+        "influences": "speech, writing, learning, commerce"
+    },
+    "Jupiter": {
+        "description": "Represents wisdom, growth, fortune and knowledge.",
+        "nature": "benefic",
+        "influences": "expansion, luck, education, spirituality"
+    },
+    "Saturn": {
+        "description": "Represents discipline, responsibility, boundaries and lessons.",
+        "nature": "malefic",
+        "influences": "karma, hard work, structure, limitations"
+    },
+    "Rahu": {
+        "description": "Represents obsession, illusion, unconventional paths and material desire.",
+        "nature": "malefic",
+        "influences": "ambition, foreign elements, sudden changes, innovation"
+    },
+    "Ketu": {
+        "description": "Represents detachment, spirituality, past life karma and liberation.",
+        "nature": "malefic",
+        "influences": "moksha, isolation, mysticism, loss"
+    }
+}

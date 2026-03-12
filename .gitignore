@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables (NEVER push API keys)
+.env
+
+# ChromaDB local storage
+chroma_data/
+
+# Test / temp
+*.tar.gz
+.pytest_cache/

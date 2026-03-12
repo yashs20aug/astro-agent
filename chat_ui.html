@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astro — Vedic Astrology Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0a0a12;
+    --bg-card: #12121f;
+    --bg-input: #1a1a2e;
+    --border: #2a2a45;
+    --text-primary: #e8e6f0;
+    --text-muted: #8b87a3;
+    --text-dim: #5c587a;
+    --accent-gold: #d4a54a;
+    --accent-gold-soft: rgba(212, 165, 74, 0.12);
+    --accent-purple: #7c6cdb;
+    --accent-purple-soft: rgba(124, 108, 219, 0.1);
+    --tag-career: #4a9e7d;
+    --tag-love: #c76b8a;
+    --tag-spiritual: #7c6cdb;
+    --tag-zodiac: #d4a54a;
+    --tag-planet: #5b9bd5;
+    --shadow: 0 4px 30px rgba(0,0,0,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* === Starfield background === */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,0.15), transparent),
+      radial-gradient(1px 1px at 45% 65%, rgba(255,255,255,0.1), transparent),
+      radial-gradient(1.5px 1.5px at 72% 18%, rgba(212,165,74,0.2), transparent),
+      radial-gradient(1px 1px at 88% 78%, rgba(255,255,255,0.12), transparent),
+      radial-gradient(1px 1px at 33% 90%, rgba(124,108,219,0.15), transparent),
+      radial-gradient(1.5px 1.5px at 60% 40%, rgba(255,255,255,0.08), transparent),
+      radial-gradient(1px 1px at 8% 70%, rgba(212,165,74,0.12), transparent),
+      radial-gradient(1px 1px at 95% 35%, rgba(255,255,255,0.1), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === Header === */
+  .header {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(10,10,18,0.95), rgba(10,10,18,0.8));
+    backdrop-filter: blur(20px);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-gold), #b8860d);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px rgba(212,165,74,0.25);
+  }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+  }
+
+  .header h1 span {
+    color: var(--accent-gold);
+  }
+
+  .connection-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4a9e7d;
+    box-shadow: 0 0 8px rgba(74,158,125,0.5);
+    animation: pulse 2s infinite;
+  }
+
+  .connection-dot.disconnected {
+    background: #c7544a;
+    box-shadow: 0 0 8px rgba(199,84,74,0.5);
+    animation: none;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* === Profile Setup Panel === */
+  .setup-panel {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+    max-height: 400px;
+    padding: 20px 28px;
+  }
+
+  .setup-panel.collapsed {
+    max-height: 0;
+    padding: 0 28px;
+    border-bottom: none;
+  }
+
+  .setup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent-gold);
+  }
+
+  .field select option { background: var(--bg-input); }
+
+  .setup-actions {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-start {
+    padding: 10px 28px;
+    background: linear-gradient(135deg, var(--accent-gold), #b8860d);
+    color: #0a0a12;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .btn-start:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(212,165,74,0.3);
+  }
+
+  .profile-badge {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px;
+    background: var(--accent-gold-soft);
+    border: 1px solid rgba(212,165,74,0.2);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--accent-gold);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    transition: background 0.2s;
+  }
+
+  .profile-badge:hover { background: rgba(212,165,74,0.18); }
+  .profile-badge.active { display: flex; }
+
+  /* === Chat Area === */
+  .chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+    scroll-behavior: smooth;
+  }
+
+  .chat-container::-webkit-scrollbar { width: 5px; }
+  .chat-container::-webkit-scrollbar-track { background: transparent; }
+  .chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* === Messages === */
+  .message {
+    display: flex;
+    gap: 12px;
+    max-width: 720px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.bot { align-self: flex-start; }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .message.bot .message-avatar {
+    background: linear-gradient(135deg, var(--accent-gold), #b8860d);
+  }
+
+  .message.user .message-avatar {
+    background: var(--accent-purple);
+  }
+
+  .message-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .message-content {
+    padding: 14px 18px;
+    border-radius: 16px;
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+
+  .message.user .message-content {
+    background: var(--accent-purple);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .message.bot .message-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+  }
+
+  .message-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+    flex-wrap: wrap;
+  }
+
+  .meta-tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  .meta-tag.retrieval-on {
+    background: rgba(74,158,125,0.15);
+    color: var(--tag-career);
+    border: 1px solid rgba(74,158,125,0.25);
+  }
+
+  .meta-tag.retrieval-off {
+    background: rgba(140,135,163,0.1);
+    color: var(--text-muted);
+    border: 1px solid rgba(140,135,163,0.15);
+  }
+
+  .meta-tag.source {
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .meta-tag.source.career_guidance { color: var(--tag-career); border-color: rgba(74,158,125,0.3); }
+  .meta-tag.source.love_guidance { color: var(--tag-love); border-color: rgba(199,107,138,0.3); }
+  .meta-tag.source.spiritual_guidance { color: var(--tag-spiritual); border-color: rgba(124,108,219,0.3); }
+  .meta-tag.source.zodiac_traits { color: var(--tag-zodiac); border-color: rgba(212,165,74,0.3); }
+  .meta-tag.source.planetary_impacts { color: var(--tag-planet); border-color: rgba(91,155,213,0.3); }
+
+  /* === Typing indicator === */
+  .typing-indicator {
+    display: none;
+    gap: 12px;
+    max-width: 720px;
+    align-self: flex-start;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .typing-indicator.active { display: flex; }
+
+  .typing-dots {
+    display: flex;
+    gap: 5px;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+  }
+
+  .typing-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    animation: bounce 1.4s infinite;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* === Welcome message === */
+  .welcome {
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeIn 0.6s ease;
+  }
+
+  .welcome-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .welcome h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .welcome p {
+    color: var(--text-muted);
+    font-size: 14px;
+    max-width: 400px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+  }
+
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .suggestion-chip {
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .suggestion-chip:hover {
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+    background: var(--accent-gold-soft);
+  }
+
+  /* === Input Area === */
+  .input-area {
+    padding: 16px 28px 20px;
+    border-top: 1px solid var(--border);
+    background: linear-gradient(0deg, rgba(10,10,18,0.98), rgba(10,10,18,0.85));
+    backdrop-filter: blur(20px);
+    position: relative;
+    z-index: 1;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .input-row textarea {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14.5px;
+    resize: none;
+    outline: none;
+    height: 46px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+  }
+
+  .input-row textarea:focus { border-color: var(--accent-gold); }
+
+  .input-row textarea::placeholder { color: var(--text-dim); }
+
+  .btn-send {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent-gold), #b8860d);
+    color: #0a0a12;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, opacity 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn-send:hover { transform: translateY(-1px); }
+  .btn-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-send svg { width: 20px; height: 20px; }
+
+  .error-toast {
+    display: none;
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #c7544a;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 100;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .error-toast.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">✦</div>
+    <h1><span>Astro</span> — Vedic Guide</h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="profile-badge" id="profileBadge" onclick="toggleSetup()">
+      <span id="badgeText">♌ Leo — Ritika</span>
+      <span style="font-size:10px;">▼</span>
+    </div>
+    <div class="connection-dot" id="connDot" title="Server status"></div>
+  </div>
+</div>
+
+<!-- Profile Setup -->
+<div class="setup-panel" id="setupPanel">
+  <div class="setup-grid">
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="inpName" value="Ritika" />
+    </div>
+    <div class="field">
+      <label>Birth Date</label>
+      <input type="date" id="inpDOB" value="1995-08-20" />
+    </div>
+    <div class="field">
+      <label>Birth Time</label>
+      <input type="time" id="inpTime" value="14:30" />
+    </div>
+    <div class="field">
+      <label>Birth Place</label>
+      <input type="text" id="inpPlace" value="Jaipur, India" />
+    </div>
+    <div class="field">
+      <label>Language</label>
+      <select id="inpLang">
+        <option value="en" selected>English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+      </select>
+    </div>
+  </div>
+  <div class="setup-actions">
+    <button class="btn-start" onclick="startChat()">Begin Reading ✦</button>
+  </div>
+</div>
+
+<!-- Chat -->
+<div class="chat-container" id="chatContainer">
+  <div class="welcome" id="welcome">
+    <div class="welcome-icon">✦</div>
+    <h2>The stars await your questions</h2>
+    <p>Fill in your birth details above and begin your personalized astrology session.</p>
+    <div class="suggestions" id="suggestions">
+      <div class="suggestion-chip" onclick="useSuggestion(this)">How's my career this month?</div>
+      <div class="suggestion-chip" onclick="useSuggestion(this)">Which planet affects my love life?</div>
+      <div class="suggestion-chip" onclick="useSuggestion(this)">Guide me on my spiritual path</div>
+      <div class="suggestion-chip" onclick="useSuggestion(this)">Why is today stressful for me?</div>
+    </div>
+  </div>
+
+  <div class="typing-indicator" id="typing">
+    <div class="message-avatar" style="background:linear-gradient(135deg,var(--accent-gold),#b8860d);">✦</div>
+    <div class="typing-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- Input -->
+<div class="input-area">
+  <div class="input-row">
+    <textarea id="msgInput" placeholder="Ask the stars..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+      oninput="autoGrow(this)"></textarea>
+    <button class="btn-send" id="btnSend" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="error-toast" id="errorToast"></div>
+
+<script>
+const API = 'http://localhost:8000/chat';
+let sessionId = 'session-' + Math.random().toString(36).slice(2, 9);
+let chatStarted = false;
+
+function getProfile() {
+  return {
+    name: document.getElementById('inpName').value || 'User',
+    birth_date: document.getElementById('inpDOB').value,
+    birth_time: document.getElementById('inpTime').value,
+    birth_place: document.getElementById('inpPlace').value,
+    preferred_language: document.getElementById('inpLang').value,
+  };
+}
+
+function startChat() {
+  const p = getProfile();
+  if (!p.birth_date) { showError('Please enter your birth date'); return; }
+  chatStarted = true;
+  document.getElementById('setupPanel').classList.add('collapsed');
+  const badge = document.getElementById('profileBadge');
+  badge.classList.add('active');
+  updateBadge();
+  document.getElementById('msgInput').focus();
+}
+
+function updateBadge() {
+  const p = getProfile();
+  const zodiac = getZodiacSign(p.birth_date);
+  const symbols = { Aries:'♈', Taurus:'♉', Gemini:'♊', Cancer:'♋', Leo:'♌', Virgo:'♍', Libra:'♎', Scorpio:'♏', Sagittarius:'♐', Capricorn:'♑', Aquarius:'♒', Pisces:'♓' };
+  document.getElementById('badgeText').textContent = `${symbols[zodiac]||'✦'} ${zodiac} — ${p.name}`;
+}
+
+function getZodiacSign(dateStr) {
+  if (!dateStr) return 'Unknown';
+  const [,m,d] = dateStr.split('-').map(Number);
+  const signs = [[1,20,'Capricorn'],[2,19,'Aquarius'],[3,20,'Pisces'],[4,20,'Aries'],[5,21,'Taurus'],[6,21,'Gemini'],[7,22,'Cancer'],[8,23,'Leo'],[9,23,'Virgo'],[10,23,'Libra'],[11,22,'Scorpio'],[12,22,'Sagittarius'],[12,31,'Capricorn']];
+  for (const [bm,bd,s] of signs) { if (m<bm||(m===bm&&d<=bd)) return s; }
+  return 'Capricorn';
+}
+
+function toggleSetup() {
+  document.getElementById('setupPanel').classList.toggle('collapsed');
+}
+
+function autoGrow(el) {
+  el.style.height = '46px';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function useSuggestion(el) {
+  if (!chatStarted) startChat();
+  document.getElementById('msgInput').value = el.textContent;
+  sendMessage();
+}
+
+function addMessage(role, text, meta) {
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  const container = document.getElementById('chatContainer');
+  const typing = document.getElementById('typing');
+
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+
+  const avatar = role === 'bot' ? '✦' : '✧';
+  let metaHTML = '';
+
+  if (meta) {
+    const retTag = meta.retrieval_used
+      ? '<span class="meta-tag retrieval-on">⚡ RAG retrieved</span>'
+      : '<span class="meta-tag retrieval-off">💬 Memory only</span>';
+    const srcTags = (meta.context_used || []).map(s =>
+      `<span class="meta-tag source ${s}">${s.replace('_',' ')}</span>`
+    ).join('');
+    metaHTML = `<div class="message-meta">${retTag}${srcTags}</div>`;
+  }
+
+  div.innerHTML = `
+    <div class="message-avatar">${avatar}</div>
+    <div class="message-body">
+      <div class="message-content">${escapeHtml(text)}</div>
+      ${metaHTML}
+    </div>
+  `;
+
+  container.insertBefore(div, typing);
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function showTyping(show) {
+  document.getElementById('typing').classList.toggle('active', show);
+  const c = document.getElementById('chatContainer');
+  c.scrollTop = c.scrollHeight;
+}
+
+function showError(msg) {
+  const toast = document.getElementById('errorToast');
+  toast.textContent = msg;
+  toast.classList.add('active');
+  setTimeout(() => toast.classList.remove('active'), 4000);
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (!chatStarted) startChat();
+
+  input.value = '';
+  input.style.height = '46px';
+  document.getElementById('btnSend').disabled = true;
+
+  addMessage('user', text);
+  showTyping(true);
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: sessionId,
+        message: text,
+        user_profile: getProfile(),
+      }),
+    });
+
+    if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+    const data = await res.json();
+    showTyping(false);
+    addMessage('bot', data.response, {
+      retrieval_used: data.retrieval_used,
+      context_used: data.context_used,
+    });
+
+    document.getElementById('connDot').classList.remove('disconnected');
+  } catch (err) {
+    showTyping(false);
+    showError('Cannot reach server — is it running on localhost:8000?');
+    document.getElementById('connDot').classList.add('disconnected');
+    addMessage('bot', 'Unable to connect to the Astro server. Make sure it\'s running with:\nLLM_PROVIDER=stub uvicorn app.main:app --reload');
+  }
+
+  document.getElementById('btnSend').disabled = false;
+  input.focus();
+}
+
+// Check server on load
+fetch('http://localhost:8000/health').then(r => {
+  if (r.ok) document.getElementById('connDot').classList.remove('disconnected');
+}).catch(() => {
+  document.getElementById('connDot').classList.add('disconnected');
+});
+</script>
+</body>
+</html>
